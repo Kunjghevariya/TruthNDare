@@ -82,13 +82,13 @@ const Register = () => {
               <Text className="text-white text-lg">LogIn</Text>
             </Link>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             className="bg-black rounded-md p-4 items-center w-1/2"
           >
             <Link href="/guest">
               <Text className="text-white text-lg">Guest</Text>
             </Link>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     </GradientBackground>

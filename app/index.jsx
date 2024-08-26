@@ -80,12 +80,12 @@ export default function Index() {
           >
             <Text className="text-white text-lg">Register</Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             className="bg-black rounded-md p-4 items-center w-1/2"
             onPress={() => navigation.navigate('guest')}
           >
             <Text className="text-white text-lg">Guest</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     </GradientBackground>
