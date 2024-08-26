@@ -192,7 +192,7 @@ const Showroom = () => {
             )}
           </View>
         </View>
-        <View className="flex-1 px-2 my-2 h-2/3">
+        <View className="flex-1 px-2 my-2 h-2/3 md:h-96">
           <View className="flex-1 bg-white rounded-md p-4">
             <Text className="text-2xl text-black mb-4">Chat</Text>
             <FlatList

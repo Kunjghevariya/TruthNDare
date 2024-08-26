@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
+import { Text, View, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { styled } from 'nativewind';
 import Showprofile from './component/showprofile';
-import { Link } from 'expo-router';
+import { Link, useNavigation } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const GradientBackground = styled(LinearGradient);
 
 const RoomJC = () => {
   const [username, setUsername] = useState("notfound");
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchUsername = async () => {
@@ -26,6 +27,18 @@ const RoomJC = () => {
     fetchUsername();
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('@access_token');
+      await AsyncStorage.removeItem('@refresh_token');
+      await AsyncStorage.removeItem('@username');
+      Alert.alert('Logged out', 'You have been logged out successfully.');
+      navigation.navigate('index'); // Redirect to the login screen
+    } catch (error) {
+      console.error('Error during logout', error);
+    }
+  };
+
   return (
     <GradientBackground
       colors={['#F3904F', '#3B4371']}
@@ -38,25 +51,29 @@ const RoomJC = () => {
           <View className="w-80 px-4 flex gap-4">
             <TouchableOpacity
               className="bg-red-600 rounded-md p-4 items-center"
-              onPress={() => {}}
             >
-              <Link href={"/createroom"}>
+              <Link href="/createroom">
                 <Text className="text-white text-lg">Create Room</Text>
               </Link>
             </TouchableOpacity>
             <TouchableOpacity
               className="bg-red-600 rounded-md p-4 items-center"
-              onPress={() => {}}
             >
-              <Link href={"/joinroom"}>
+              <Link href="/joinroom">
                 <Text className="text-white text-lg">Join Room</Text>
               </Link>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="bg-black border border-white rounded-md p-4 items-center"
+              onPress={handleLogout}
+            >
+              <Text className="text-white text-lg">Logout</Text>
             </TouchableOpacity>
           </View>
         </View>
       </SafeAreaView>
     </GradientBackground>
   );
-}
+};
 
 export default RoomJC;

@@ -2,11 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { styled } from 'nativewind';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { loginUser } from './api/auth';
-
-
 
 const GradientBackground = styled(LinearGradient);
 
@@ -14,7 +12,18 @@ export default function Index() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigation = useNavigation(); 
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const checkAccessToken = async () => {
+      const accessToken = await AsyncStorage.getItem('@access_token');
+      if (accessToken) {
+        navigation.navigate('roomjc');
+      }
+    };
+
+    checkAccessToken();
+  }, []);
 
   const handleLogin = async () => {
     setLoading(true);
@@ -25,7 +34,7 @@ export default function Index() {
       await AsyncStorage.setItem('@access_token', accessToken);
       await AsyncStorage.setItem('@refresh_token', refreshToken);
       await AsyncStorage.setItem('@username', username);
-      
+
       Alert.alert('Success', response.message);
       navigation.navigate('roomjc');
     } catch (error) {
