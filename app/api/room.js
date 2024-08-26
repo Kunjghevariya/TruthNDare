@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import socket from './socket';
 
 
+// const API_URL = 'http://localhost:8002/api/v1/room';
 const API_URL = 'https://truthndare-backend.onrender.com/api/v1/room';
 
 

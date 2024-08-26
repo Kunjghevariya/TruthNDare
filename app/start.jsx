@@ -1,16 +1,15 @@
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Link } from 'expo-router';
 import { styled } from 'nativewind';
-import React, { useRef, useState, useEffect } from 'react';
-import { Animated, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, Text, TouchableOpacity, View } from 'react-native';
 import { G, Path, Svg, Text as SvgText } from 'react-native-svg';
 import io from 'socket.io-client';
 import { getRoom } from './api/room';
-import { useRoute, useNavigation } from '@react-navigation/native';
 
 const GradientBackground = styled(LinearGradient);
 
-const socket = io('https://truthndare-backend.onrender.com:8002'); // Replace with your backend URL
+const socket = io('https://truthndare-backend.onrender.com'); // Replace with your backend URL
 
 const Index = () => {
   const [selectplayer, setselectplayer] = useState('');
@@ -23,14 +22,25 @@ const Index = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const roomCode = route.params?.roomCode;
+  const rID = route.params?.rID;
+  console.log(rID)
   const degree = 700;
 
   useEffect(() => {
     if (roomCode) {
       fetchRoomDetails(roomCode);
     }
+  
+    // Listen for 'rotateWheel' event from server
+    socket.on('rotateWheel', (data) => {
+      rotateWheel(data.selectedPlayer);
+    });
+  
+    return () => {
+      socket.off('rotateWheel'); // Clean up the event listener
+    };
   }, [roomCode]);
-
+  
   const fetchRoomDetails = async (roomCode) => {
     setLoading(true); // Start loading
     try {
@@ -47,7 +57,7 @@ const Index = () => {
   const generateSegments = (numSegments, selectedIndex) => {
     const segments = [];
     const angle = 360 / numSegments;
-    const colors = ['green', 'yellow', 'red'];
+    const colors = ['green', 'red', 'orange', 'yellow'];
 
     for (let i = 0; i < numSegments; i++) {
       const startAngle = (angle * i) * (Math.PI / 180);
@@ -71,6 +81,7 @@ const Index = () => {
           <Path
             d={pathData}
             fill={i === selectedIndex ? 'orange' : colors[i % 3]}
+            // fill={i === selectedIndex ? 'orange' : colors[i % 3]}
             stroke="black"
             strokeWidth="1"
           />
@@ -91,29 +102,36 @@ const Index = () => {
     return segments;
   };
 
-  const rotateWheel = () => {
+  const backhandle = () => {
+    navigation.navigate('showroom', { roomCode: roomCode });
+  };
 
+  const rotateWheel = (selectedPlayerIndex = null) => {
     const anglePerSegment = 360 / players;
-    const selectedPlayer = Math.floor(Math.random() * players);
+    const selectedPlayer = selectedPlayerIndex !== null ? selectedPlayerIndex : Math.floor(Math.random() * players);
     const selectangle = (selectedPlayer * anglePerSegment) - anglePerSegment / 2;
-    const randomDegree = selectangle;
-
+  
+    console.log('Rotating wheel...'); // Debug log
+  
     Animated.timing(rotation, {
-      toValue: 360 - randomDegree - anglePerSegment,
+      toValue: 360 - selectangle - anglePerSegment,
       duration: 3000,
       useNativeDriver: true,
     }).start(() => {
-      const selectedAngle = selectangle;
       setSelectedPlayerIndex(selectedPlayer);
       console.log('Selected Player:', playerNames[selectedPlayer]);
       setselectplayer(playerNames[selectedPlayer]);
-      setshow(true);
-      setLoading(false); // End loading
-
-      // Emit the selected player to the backend
-      socket.emit('selectPlayer', { playerId: playerNames[selectedPlayer] });
+      setshow(false);
+      setLoading(false);
+  
+      if (selectedPlayerIndex === null) {
+        console.log('Emitting rotateWheel event'); // Debug log
+        socket.emit('rotateWheel', { roomID: roomCode, selectedPlayer });
+      }
     });
   };
+  
+  
 
   const rotateInterpolation = rotation.interpolate({
     inputRange: [0, 360],
@@ -138,7 +156,8 @@ const Index = () => {
             <Text className=" absolute text-8xl text-center justify-center top-28 right-0">&#9001;</Text>
             <TouchableOpacity
               className="mt-4 p-2 bg-white rounded"
-              onPress={rotateWheel}
+              onPress={() => rotateWheel(null)}
+              
             >
               <Text className="text-black font-bold">Rotate</Text>
             </TouchableOpacity>
@@ -146,10 +165,10 @@ const Index = () => {
         )}
       </View>
       <TouchableOpacity
-        className="m-2 bg-black rounded-md p-4 items-center w-1/2"
+        className="m-2 bg-black rounded-md p-4 items-center w-1/2" onPress={backhandle}
       >
         <Text className="text-white text-lg">
-          <Link href="/roomjc">Back</Link>
+Back
         </Text>
       </TouchableOpacity>
       {show ? (

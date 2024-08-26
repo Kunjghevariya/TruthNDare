@@ -2,6 +2,7 @@
 import axios from 'axios';
 
 const API_URL = 'https://truthndare-backend.onrender.com/api/v1/users'; 
+// const API_URL = 'http://localhost:8002/api/v1/users'; 
 
  const loginUser = async (email, password) => {
   try {
@@ -26,4 +27,5 @@ const registerUser = async (username, email, password) => {
     }
   };
 
-  export {loginUser,registerUser};
+  export { loginUser, registerUser };
+

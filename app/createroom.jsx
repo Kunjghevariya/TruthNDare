@@ -17,8 +17,10 @@ const Guest = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false); // Loading state
   const navigation = useNavigation();
-
-  const socket = io("https://truthndare-backend.onrender.com:8002");
+  const socket = io('https://truthndare-backend.onrender.com', {
+    transports: ['websocket'],
+    withCredentials: true,
+  });
 
   const handleCreateRoom = async () => {
     if (!roomName) {
