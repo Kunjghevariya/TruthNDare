@@ -1,185 +1,170 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { styled } from 'nativewind';
-import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Text, TouchableOpacity, View } from 'react-native';
-import { G, Path, Svg, Text as SvgText } from 'react-native-svg';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Animated, Text, TouchableOpacity, View } from 'react-native';
 import io from 'socket.io-client';
 import { getRoom } from './api/room';
+import ChatComponent from './component/chatcomponent';
+import Wheel from './component/gamewheel';
 
 const GradientBackground = styled(LinearGradient);
 
-const socket = io('https://truthndare-backend.onrender.com'); // Replace with your backend URL
+const socket = io('https://truthndare-backend.onrender.com'); // Replace with your environment variable
 
-const Index = () => {
-  const [selectplayer, setselectplayer] = useState('');
-  const [show, setshow] = useState(false);
-  const [playerNames, setPlayers] = useState(['Player 1', 'Player 2', 'Player 3', 'Player 4']);
-  const players = playerNames.length;
+const Start = () => {
+  const [selectedPlayer, setSelectedPlayer] = useState('');
+  const [showResult, setShowResult] = useState(false);
+  const [playerNames, setPlayerNames] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState(null);
   const rotation = useRef(new Animated.Value(0)).current;
   const [selectedPlayerIndex, setSelectedPlayerIndex] = useState(null);
-  const [loading, setLoading] = useState(false); // Loading state
+  const [messages, setMessages] = useState([]);
+  const [playerName, setPlayerName] = useState('');
+
   const route = useRoute();
   const navigation = useNavigation();
   const roomCode = route.params?.roomCode;
-  const rID = route.params?.rID;
-  console.log(rID)
-  const degree = 700;
+
+  useEffect(() => {
+    const getPlayerName = async () => {
+      try {
+        const storedUsername = await AsyncStorage.getItem('@username');
+        if (storedUsername) setPlayerName(storedUsername);
+      } catch (error) {
+        console.error('Failed to load player name from AsyncStorage:', error);
+      }
+    };
+
+    getPlayerName();
+  }, []);
 
   useEffect(() => {
     if (roomCode) {
       fetchRoomDetails(roomCode);
     }
-  
-    // Listen for 'rotateWheel' event from server
+
+    socket.emit('joinRoom', roomCode);
+
     socket.on('rotateWheel', (data) => {
-      rotateWheel(data.selectedPlayer);
+      console.log('Received rotateWheel event:', data);
+      if (data && typeof data.selectedPlayer === 'number') {
+        startRotation(data.selectedPlayer);
+      } else {
+        console.error('Invalid data received for rotateWheel:', data);
+      }
     });
-  
+
+    socket.on('countdown', (seconds) => {
+      setCountdown(seconds);
+    });
+
+    socket.on('message', (message) => {
+      console.log(`Message received in room ${roomCode}: ${message}`);
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
+
     return () => {
-      socket.off('rotateWheel'); // Clean up the event listener
+      socket.off('rotateWheel');
+      socket.off('countdown');
+      socket.off('message');
     };
   }, [roomCode]);
-  
+
+  const handleSendMessage = useCallback((message) => {
+    if (socket && roomCode) {
+      socket.emit('sendMessage', { roomID: roomCode, text: message, playerName });
+    } else {
+      Alert.alert('Error', 'Socket not connected or roomID not set');
+    }
+  }, [socket, roomCode, playerName]);
+
   const fetchRoomDetails = async (roomCode) => {
-    setLoading(true); // Start loading
+    setLoading(true);
     try {
       const roomDetails = await getRoom(roomCode);
       console.log('Room details:', roomDetails);
-      setPlayers(roomDetails.players);
+      setPlayerNames(roomDetails.players);
     } catch (error) {
       console.error('Error fetching room details:', error.message);
+      Alert.alert('Error', 'Failed to fetch room details.');
     } finally {
-      setLoading(false); // End loading
+      setLoading(false);
     }
   };
 
-  const generateSegments = (numSegments, selectedIndex) => {
-    const segments = [];
-    const angle = 360 / numSegments;
-    const colors = ['green', 'red', 'orange', 'yellow'];
-
-    for (let i = 0; i < numSegments; i++) {
-      const startAngle = (angle * i) * (Math.PI / 180);
-      const endAngle = (angle * (i + 1)) * (Math.PI / 180);
-      const largeArcFlag = angle > 180 ? 1 : 0;
-
-      const x1 = 100 + 100 * Math.cos(startAngle);
-      const y1 = 100 + 100 * Math.sin(startAngle);
-      const x2 = 100 + 100 * Math.cos(endAngle);
-      const y2 = 100 + 100 * Math.sin(endAngle);
-
-      const pathData = `
-        M 100 100
-        L ${x1} ${y1}
-        A 100 100 0 ${largeArcFlag} 1 ${x2} ${y2}
-        Z
-      `;
-
-      segments.push(
-        <G key={i}>
-          <Path
-            d={pathData}
-            fill={i === selectedIndex ? 'orange' : colors[i % 3]}
-            // fill={i === selectedIndex ? 'orange' : colors[i % 3]}
-            stroke="black"
-            strokeWidth="1"
-          />
-          <SvgText
-            x={100 + 70 * Math.cos(startAngle + (endAngle - startAngle) / 2)}
-            y={100 + 70 * Math.sin(startAngle + (endAngle - startAngle) / 2)}
-            fill="white"
-            fontSize="12"
-            fontWeight="bold"
-            textAnchor="middle"
-            alignmentBaseline="middle"
-          >
-            {playerNames[i]}
-          </SvgText>
-        </G>
-      );
-    }
-    return segments;
+  const startCountdown = () => {
+    setCountdown(2);
+    socket.emit('countdown', 2);
+    setTimeout(() => {
+      const playerIndex = Math.floor(Math.random() * playerNames.length);
+      socket.emit('rotateWheel', { roomID: roomCode, selectedPlayer: playerIndex });
+    }, 2000);
   };
 
-  const backhandle = () => {
-    navigation.navigate('showroom', { roomCode: roomCode });
-  };
+  const startRotation = (selectedPlayerIndex = null) => {
+    if (selectedPlayerIndex === null) return;
 
-  const rotateWheel = (selectedPlayerIndex = null) => {
-    const anglePerSegment = 360 / players;
-    const selectedPlayer = selectedPlayerIndex !== null ? selectedPlayerIndex : Math.floor(Math.random() * players);
-    const selectangle = (selectedPlayer * anglePerSegment) - anglePerSegment / 2;
-  
-    console.log('Rotating wheel...'); // Debug log
-  
+    const anglePerSegment = 360 / playerNames.length;
+    const selectAngle = (selectedPlayerIndex * anglePerSegment) - anglePerSegment / 2;
+
+    console.log('Rotating wheel...');
+    rotation.setValue(0);
+
     Animated.timing(rotation, {
-      toValue: 360 - selectangle - anglePerSegment,
+      toValue: 360 * 5 + selectAngle,
       duration: 3000,
       useNativeDriver: true,
     }).start(() => {
-      setSelectedPlayerIndex(selectedPlayer);
-      console.log('Selected Player:', playerNames[selectedPlayer]);
-      setselectplayer(playerNames[selectedPlayer]);
-      setshow(false);
+      setSelectedPlayerIndex(selectedPlayerIndex);
+      setSelectedPlayer(playerNames[selectedPlayerIndex]);
+      setShowResult(true);
       setLoading(false);
-  
-      if (selectedPlayerIndex === null) {
-        console.log('Emitting rotateWheel event'); // Debug log
-        socket.emit('rotateWheel', { roomID: roomCode, selectedPlayer });
-      }
     });
   };
-  
-  
 
-  const rotateInterpolation = rotation.interpolate({
-    inputRange: [0, 360],
-    outputRange: ['0deg', '360deg'],
-  });
+  const backHandle = () => {
+    navigation.navigate('showroom', { roomCode });
+  };
 
   return (
     <GradientBackground
       colors={['#de6161', '#2657eb']}
       className="flex justify-center items-center h-full p-4"
     >
+      {/* <View className="flex-1 px-2 my-2 h-2/3 md:h-96">
+        <ChatComponent messages={messages} onSendMessage={handleSendMessage} />
+      </View> */}
       <View className="justify-center items-center">
         {loading ? (
           <ActivityIndicator size="large" color="#ffffff" />
         ) : (
           <>
-            <Animated.View style={{ transform: [{ rotate: rotateInterpolation }] }}>
-              <Svg height="300" width="300" viewBox="0 0 200 200">
-                <G>{generateSegments(players, selectedPlayerIndex)}</G>
-              </Svg>
-            </Animated.View>
-            <Text className=" absolute text-8xl text-center justify-center top-28 right-0">&#9001;</Text>
-            <TouchableOpacity
-              className="mt-4 p-2 bg-white rounded"
-              onPress={() => rotateWheel(null)}
-              
-            >
-              <Text className="text-black font-bold">Rotate</Text>
-            </TouchableOpacity>
+            <Wheel
+              playerNames={playerNames}
+              rotation={rotation}
+              selectedPlayerIndex={selectedPlayerIndex}
+              onRotate={startCountdown}
+            />
+            <Text className="absolute text-8xl text-center justify-center top-24 right-0">&#9001;</Text>
           </>
         )}
       </View>
       <TouchableOpacity
-        className="m-2 bg-black rounded-md p-4 items-center w-1/2" onPress={backhandle}
+        className="m-2 bg-black rounded-md p-4 items-center w-1/2"
+        onPress={backHandle}
       >
-        <Text className="text-white text-lg">
-Back
-        </Text>
+        <Text className="text-white text-lg">Back</Text>
       </TouchableOpacity>
-      {show ? (
-        <View className='bg-white absolute text-5xl p-5'>
-          <Text className="text-3xl m-5">
-            Selected Player: {selectplayer}
-          </Text>
-        </View>
-      ) : null}
+      <View className="absolute bottom-10">
+        <Text className="text-white text-2xl">
+          {countdown > 0 ? `Starting in ${countdown}s` : 'Spinning!'}
+        </Text>
+      </View>
     </GradientBackground>
   );
 };
 
-export default Index;
+export default Start;
