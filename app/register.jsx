@@ -19,7 +19,7 @@ const Register = () => {
   const handleRegister = async () => {
     setLoading(true);
     try {
-      const response = await registerUser(email, password, username);
+      const response = await registerUser(username, email, password);
       Alert.alert('Success', response.message);
       navigation.navigate('index');
       console.log(response);
