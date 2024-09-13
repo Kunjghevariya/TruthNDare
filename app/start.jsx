@@ -11,7 +11,7 @@ import Wheel from './component/gamewheel';
 
 const GradientBackground = styled(LinearGradient);
 
-const socket = io('https://truthndare-backend.onrender.com'); // Replace with your environment variable
+const socket = io('https://truthndare-backend.onrender.com'); 
 
 const Start = () => {
   const [selectedPlayer, setSelectedPlayer] = useState('');
@@ -106,17 +106,19 @@ const Start = () => {
 
   const startRotation = (selectedPlayerIndex = null) => {
     if (selectedPlayerIndex === null) return;
-
+  
     const anglePerSegment = 360 / playerNames.length;
     const selectAngle = (selectedPlayerIndex * anglePerSegment) - anglePerSegment / 2;
+  
 
-    console.log('Rotating wheel...');
     rotation.setValue(0);
-
+  
+    console.log('Rotating wheel...');
+    
     Animated.timing(rotation, {
       toValue: 360 * 5 + selectAngle,
-      duration: 3000,
-      useNativeDriver: true,
+      duration: 4000, 
+      useNativeDriver: true, 
     }).start(() => {
       setSelectedPlayerIndex(selectedPlayerIndex);
       setSelectedPlayer(playerNames[selectedPlayerIndex]);
@@ -124,6 +126,7 @@ const Start = () => {
       setLoading(false);
     });
   };
+  
 
   const backHandle = () => {
     navigation.navigate('showroom', { roomCode });
