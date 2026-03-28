@@ -1,16 +1,17 @@
 {
   "expo": {
-    "name": "TND",
-    "slug": "TND",
-    "version": "1.0.0",
+    "name": "Truth N Dare",
+    "slug": "truth-n-dare",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/Colorful Modern Infinity Technology Free Logo.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
+    "scheme": "truthndare",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#081120"
     },
     "ios": {
       "supportsTablet": true
@@ -30,6 +31,9 @@
       "expo-router",
       "expo-secure-store"
     ],
+    "extra": {
+      "appVariant": "production"
+    },
     "experiments": {
       "typedRoutes": true
     }

@@ -1,71 +1,49 @@
+import { useCallback } from 'react';
+import { View } from 'react-native';
 import { Stack } from 'expo-router';
-import { NativeWindStyleSheet } from 'nativewind';
-import { createContext, useState, useContext } from 'react';
+import { useFonts } from 'expo-font';
+import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
+import { SessionProvider } from '../src/providers/session-provider';
 
-NativeWindStyleSheet.setOutput({
-  default: 'native',
-});
-
-// Create Context for Room Code
-const RoomCodeContext = createContext();
-
-export const useRoomCode = () => useContext(RoomCodeContext);
+void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [roomCode, setRoomCode] = useState('');
+  const [fontsLoaded] = useFonts({
+    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  });
+
+  const onLayout = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
-    <RoomCodeContext.Provider value={{ roomCode, setRoomCode }}>
-      <Stack>
-        <Stack.Screen
-          name="index"
-          options={{
+    <SessionProvider>
+      <StatusBar style="light" />
+      <View style={{ flex: 1 }} onLayout={onLayout}>
+        <Stack
+          screenOptions={{
             headerShown: false,
+            animation: 'fade_from_bottom',
+            contentStyle: { backgroundColor: '#081120' },
           }}
-        />
-        <Stack.Screen
-          name="showroom"
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="roomjc"
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="register"
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="guest"
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="createroom"
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="joinroom"
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="start"
-          options={{
-            headerShown: false,
-          }}
-        />
-      </Stack>
-    </RoomCodeContext.Provider>
+        >
+          <Stack.Screen name="index" />
+          <Stack.Screen name="register" />
+          <Stack.Screen name="guest" />
+          <Stack.Screen name="roomjc" />
+          <Stack.Screen name="createroom" />
+          <Stack.Screen name="joinroom" />
+          <Stack.Screen name="showroom" />
+          <Stack.Screen name="start" />
+        </Stack>
+      </View>
+    </SessionProvider>
   );
 }

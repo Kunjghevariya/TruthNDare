@@ -1,51 +1,89 @@
-# Welcome to your Expo app 👋
+# Truth N Dare Frontend
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Expo Router frontend rebuilt for a cleaner production workflow, better code splitting, and a more modern room/game experience.
 
-## Get started
+## Highlights
 
-1. Install dependencies
+- Lazy-loaded route screens for login, register, guest access, lobby, room, and wheel flow
+- Shared UI system in [`src/components`](/Users/kunjghevariya/Desktop/git1/TruthNDare/src/components)
+- Centralized session and token refresh handling in [`src/providers/session-provider.jsx`](/Users/kunjghevariya/Desktop/git1/TruthNDare/src/providers/session-provider.jsx)
+- Shared API and socket services in [`src/services`](/Users/kunjghevariya/Desktop/git1/TruthNDare/src/services)
+- More human game flow with side chat, recent round memory, and richer truth/dare prompt presentation
+- Static web export support for deployment on Netlify
 
-   ```bash
-   npm install
-   ```
+## Tech stack
 
-2. Start the app
+- Expo 51
+- Expo Router
+- React Native + React Native Web
+- Axios
+- Socket.IO client
 
-   ```bash
-    npx expo start
-   ```
+## Project structure
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```text
+app/                    Expo Router entry files
+src/components/         Reusable UI and layout primitives
+src/features/           Screen-level feature modules
+src/providers/          App-wide state and session handling
+src/services/           API, storage, and socket clients
+src/constants/          Routes and theme tokens
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Environment
 
-## Learn more
+Create a local `.env` file from [`.env.example`](/Users/kunjghevariya/Desktop/git1/TruthNDare/.env.example):
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+cp .env.example .env
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Supported variables:
 
-## Join the community
+- `EXPO_PUBLIC_API_URL`
+- `EXPO_PUBLIC_SOCKET_URL`
 
-Join our community of developers creating universal apps.
+If you do not override them, the frontend now defaults to `http://localhost:8000` to match the backend dev server.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-# TruthNDare
+## Local development
+
+```bash
+npm install
+npm run start
+```
+
+Useful commands:
+
+- `npm run android`
+- `npm run ios`
+- `npm run web`
+- `npm run lint`
+- `npm run build:web`
+
+## Deployment
+
+### Web
+
+Static export is configured with [`netlify.toml`](/Users/kunjghevariya/Desktop/git1/TruthNDare/netlify.toml).
+
+```bash
+npm run build:web
+```
+
+This generates the deployable output in `dist/`.
+
+### Native builds
+
+EAS configuration lives in [`eas.json`](/Users/kunjghevariya/Desktop/git1/TruthNDare/eas.json).
+
+Examples:
+
+```bash
+npx eas build --platform android --profile preview
+npx eas build --platform ios --profile production
+```
+
+## Verification completed
+
+- `npm run lint`
+- `npm run build:web`
