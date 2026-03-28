@@ -45,6 +45,10 @@ Supported variables:
 
 If you do not override them, the frontend now defaults to `http://localhost:8000` to match the backend dev server.
 
+Production web builds are configured to use:
+
+- `https://truthndare-backend.onrender.com`
+
 ## Local development
 
 ```bash
@@ -65,6 +69,11 @@ Useful commands:
 ### Web
 
 Static export is configured with [`netlify.toml`](/Users/kunjghevariya/Desktop/git1/TruthNDare/netlify.toml).
+
+Netlify build env is already pointed at your Render backend:
+
+- `EXPO_PUBLIC_API_URL=https://truthndare-backend.onrender.com`
+- `EXPO_PUBLIC_SOCKET_URL=https://truthndare-backend.onrender.com`
 
 ```bash
 npm run build:web
