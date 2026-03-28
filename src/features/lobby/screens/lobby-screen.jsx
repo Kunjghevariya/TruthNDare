@@ -46,34 +46,34 @@ export default function LobbyScreen() {
       label: 'Identity',
       value: session?.user?.username || 'player',
       tone: 'success',
-      description: 'Session restored from secure local storage.',
+      description: 'You are signed in and ready to jump into the next room.',
     },
     {
       label: 'Last room',
       value: lastRoomCode || 'No room yet',
       tone: 'accent',
-      description: 'Jump back into the last active lobby in one tap.',
+      description: 'Open your last saved room in one tap when you want to pick up fast.',
     },
     {
-      label: 'Client state',
-      value: 'Production ready',
+      label: 'Ready to play',
+      value: lastRoomCode ? 'Resume or host' : 'Create or join',
       tone: 'default',
-      description: 'Lazy routes, token refresh, and shared socket services are enabled.',
+      description: 'Start fresh with a new room or bring your group back together quickly.',
     },
   ];
 
   const featureCards = [
     {
-      title: 'Realtime rooms',
-      description: 'Room updates, chat, countdowns, and wheel events now move through one shared socket client instead of duplicated screen listeners.',
+      title: 'Host a room',
+      description: 'Open a room, share the code, and bring everyone into the same space without extra steps.',
     },
     {
-      title: 'Safer sessions',
-      description: 'Login, refresh, logout, and guest mode all flow through the same session provider with stored tokens and retry support.',
+      title: 'Join friends fast',
+      description: 'Drop into an invite code, reconnect to the group, and keep the energy moving.',
     },
     {
-      title: 'Deployable web app',
-      description: 'The frontend exports static bundles cleanly, and the backend has a health endpoint plus deployment config for Render.',
+      title: 'Keep rounds flowing',
+      description: 'Chat, shared spins, and turn prompts are all lined up so the room feels smooth instead of messy.',
     },
   ];
 
@@ -89,7 +89,7 @@ export default function LobbyScreen() {
         <Reveal delay={0}>
           <ProfileBanner
             username={session?.user?.username || 'player'}
-            subtitle="Your session, room history, and tokens are now handled centrally."
+            subtitle="Pick up your group, host a fresh room, or jump back into the last one you played."
             onLogout={handleLogout}
           />
         </Reveal>
@@ -98,7 +98,7 @@ export default function LobbyScreen() {
           <SectionHeading
             eyebrow="Lobby"
             title="Choose how you want to start the next round."
-            description="Create a fresh room, join an invite code, or jump back into the last lobby you touched. This screen is now designed like a proper dashboard, with smoother motion and cleaner mobile scrolling."
+            description="Create a fresh room, join an invite code, or jump back into the last lobby you touched. This space is now focused on helping players move quickly, not showing internal app status."
             action={<StatusPill label={lastRoomCode ? `Last room ${lastRoomCode}` : 'Fresh session'} tone="accent" />}
           />
         </Reveal>

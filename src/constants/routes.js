@@ -1,5 +1,6 @@
 export const ROUTES = {
-  login: '/',
+  home: '/',
+  login: '/login',
   register: '/register',
   guest: '/guest',
   lobby: '/roomjc',
